@@ -1,0 +1,12 @@
+{
+  "name": "@example/basic-theme-workspace",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "build:registry": "node ../dist/cli.cjs build --config ./theme-registry.config.cjs",
+    "watch:registry": "node ../dist/cli.cjs watch --config ./theme-registry.config.cjs",
+    "package:theme": "node ../dist/cli.cjs package child-theme --config ./theme-registry.config.cjs",
+    "list:themes": "node ../dist/cli.cjs list --config ./theme-registry.config.cjs",
+    "catalog": "node ../dist/cli.cjs catalog --config ./theme-registry.config.cjs --out ./theme-catalog.js"
+  }
+}

@@ -1,0 +1,10 @@
+dist
+node_modules
+examples/node_modules
+examples/dist-themes
+examples/themes/*/registry.js
+examples/themes/*/registry/
+theme-catalog.js
+examples/theme-catalog.js
+*.log
+.idea

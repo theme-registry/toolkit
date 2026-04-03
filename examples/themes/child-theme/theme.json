@@ -1,0 +1,11 @@
+{
+  "name": "Child Example Theme",
+  "parent": "base-theme",
+  "context": ["layout"],
+  "settings": {
+    "brand": {
+      "name": "ChildCo",
+      "primaryColor": "#9333EA"
+    }
+  }
+}

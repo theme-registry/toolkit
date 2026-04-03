@@ -1,0 +1,10 @@
+{
+  "name": "Basic Example Theme",
+  "context": ["layout"],
+  "settings": {
+    "brand": {
+      "name": "Acme",
+      "primaryColor": "#0F172A"
+    }
+  }
+}
