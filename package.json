@@ -7,6 +7,10 @@
     "name": "Petyo Stoyanov",
     "email": "petyosv@gmail.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/theme-registry/toolkit.git"
+  },
   "type": "module",
   "main": "dist/index.cjs",
   "module": "dist/index.mjs",
