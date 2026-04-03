@@ -2,8 +2,8 @@ import { EOL } from 'os'
 import fs from 'fs'
 import path from 'path'
 import { createRequire } from 'module'
-import { pathToFileURL } from 'url'
 import { ThemeNotFoundError } from './errors.js'
+import { getModuleUrl } from './utils/moduleUrl.js'
 import type {
   LoaderContext,
   LoaderStrategy,
@@ -12,10 +12,7 @@ import type {
   ThemeSettingsEntry
 } from './types.js'
 
-const moduleUrl = typeof import.meta !== 'undefined' && import.meta.url
-  ? import.meta.url
-  : pathToFileURL(__filename).href
-const require = createRequire(moduleUrl)
+const require = createRequire(getModuleUrl())
 const DEFAULT_EXTENSIONS = ['.js', '.jsx', '.ts', '.tsx']
 
 export interface ThemeOptions {

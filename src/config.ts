@@ -3,16 +3,14 @@ import path from 'path'
 import { pathToFileURL } from 'url'
 import { createRequire } from 'module'
 import { resolveLoader } from './loader.js'
+import { getModuleUrl } from './utils/moduleUrl.js'
 import type {
   ResolvedConfig,
   ThemeRegistryOptions,
   ThemeRegistryUserConfig
 } from './types.js'
 
-const moduleUrl = typeof import.meta !== 'undefined' && import.meta.url
-  ? import.meta.url
-  : pathToFileURL(__filename).href
-const require = createRequire(moduleUrl)
+const require = createRequire(getModuleUrl())
 
 const DEFAULT_CONFIG_FILES = [
   'theme-registry.config.js',

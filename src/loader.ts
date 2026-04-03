@@ -2,12 +2,10 @@ import path from 'path'
 import { pathToFileURL } from 'url'
 import { createRequire } from 'module'
 import { defaultLoader } from './loaders/defaultLoader.js'
+import { getModuleUrl } from './utils/moduleUrl.js'
 import type { LoaderSpecifier, LoaderStrategy } from './types.js'
 
-const moduleUrl = typeof import.meta !== 'undefined' && import.meta.url
-  ? import.meta.url
-  : pathToFileURL(__filename).href
-const require = createRequire(moduleUrl)
+const require = createRequire(getModuleUrl())
 
 interface LoaderResolveOptions {
   cwd: string
