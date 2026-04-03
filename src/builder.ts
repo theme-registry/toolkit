@@ -3,6 +3,7 @@ import path from 'path'
 import chokidar from 'chokidar'
 import { Theme } from './Theme.js'
 import { resolveOptions } from './config.js'
+import { generateThemeCatalog } from './catalog.js'
 import type {
   BuildThemesOptions,
   ResolvedConfig,
@@ -26,8 +27,26 @@ export async function buildAllThemes(options: BuildThemesOptions): Promise<Theme
  */
 export async function watchThemes(options: WatchThemesOptions): Promise<ThemeWatcherHandle> {
   const resolved = await resolveOptions(options)
+  const normalizedThemesDir = path.resolve(resolved.themesDir)
   const themes = loadThemes(resolved)
+  const themesByRoot = new Map<string, Theme>()
+
+  const registerThemeInstance = (theme: Theme): void => {
+    const normalizedRoot = path.resolve(theme.themeRoot)
+    themesByRoot.set(normalizedRoot, theme)
+  }
+
+  const regenerateCatalog = (): void => {
+    try {
+      generateThemeCatalog({ resolvedConfig: resolved })
+    } catch (err) {
+      console.warn('Failed to generate theme catalog:', (err as Error).message)
+    }
+  }
+
+  themes.forEach(registerThemeInstance)
   themes.forEach(theme => theme.rebuild())
+  regenerateCatalog()
 
   const templatePattern = path.join(
     resolved.themesDir,
@@ -43,18 +62,55 @@ export async function watchThemes(options: WatchThemesOptions): Promise<ThemeWat
     ...options.watchOptions
   })
 
-  const templatesRoots = new Map<string, Theme>()
-  themes.forEach(theme => templatesRoots.set(theme.templatesRoot, theme))
+  const resolveThemeRootFromPath = (filePath: string): string | undefined => {
+    const normalizedFile = path.resolve(filePath)
+    if (!normalizedFile.startsWith(normalizedThemesDir)) {
+      return undefined
+    }
+
+    const relative = path.relative(normalizedThemesDir, normalizedFile)
+    const [themeFolder] = relative.split(path.sep)
+    if (!themeFolder) {
+      return undefined
+    }
+
+    return path.join(normalizedThemesDir, themeFolder)
+  }
 
   const findTheme = (filePath: string): Theme | undefined => {
-    const normalizedFile = path.resolve(filePath)
-    for (const [root, theme] of templatesRoots.entries()) {
-      const normalizedRoot = path.resolve(root)
-      if (normalizedFile.startsWith(normalizedRoot)) {
-        return theme
-      }
+    const themeRoot = resolveThemeRootFromPath(filePath)
+    if (!themeRoot) return undefined
+    return themesByRoot.get(path.resolve(themeRoot))
+  }
+
+  const registerTheme = (themeRoot: string): Theme | undefined => {
+    const normalizedRoot = path.resolve(themeRoot)
+    if (themesByRoot.has(normalizedRoot)) {
+      return themesByRoot.get(normalizedRoot)
     }
-    return undefined
+
+    try {
+      const theme = new Theme(normalizedRoot, {
+        templatesDir: resolved.templatesDir,
+        loader: resolved.loader,
+        registryModule: resolved.registryModule
+      })
+      registerThemeInstance(theme)
+      theme.rebuild()
+      regenerateCatalog()
+      return theme
+    } catch (err) {
+      console.warn((err as Error).message)
+      return undefined
+    }
+  }
+
+  const ensureTheme = (filePath: string): Theme | undefined => {
+    const existing = findTheme(filePath)
+    if (existing) return existing
+    const themeRoot = resolveThemeRootFromPath(filePath)
+    if (!themeRoot) return undefined
+    return registerTheme(themeRoot)
   }
 
   const emit = (event: ThemeWatcherEvent): void => {
@@ -62,7 +118,7 @@ export async function watchThemes(options: WatchThemesOptions): Promise<ThemeWat
   }
 
   watcher.on('add', filePath => {
-    const theme = findTheme(filePath)
+    const theme = ensureTheme(filePath)
     if (!theme) return
     theme.addTemplate(filePath)
     emit({ type: 'add', themeRoot: theme.themeRoot, templatePath: filePath })

@@ -1,6 +1,6 @@
 {
   "name": "@theme-registry/toolkit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Bundler-agnostic theme registry builder with CLI and watcher",
   "license": "MIT",
   "author": {
